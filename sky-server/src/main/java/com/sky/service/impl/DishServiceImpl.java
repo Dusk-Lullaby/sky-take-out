@@ -170,4 +170,21 @@ public class DishServiceImpl implements DishService {
             dishMapper.update(dish);
         }
     }
+
+    /**
+     * 根据分类id查询菜品
+     * @param id
+     * @return
+     */
+    @Override
+    public List<Dish> getDishListByCategoryId(Long id) {
+
+        // 查询category_id = id && status == 1，只查询起售的菜品
+        Dish dish = Dish.builder()
+                .status(StatusConstant.ENABLE)
+                .categoryId(id)
+                .build();
+
+        return dishMapper.getList(dish);
+    }
 }
