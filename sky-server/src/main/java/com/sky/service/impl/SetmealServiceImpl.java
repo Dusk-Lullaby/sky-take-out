@@ -57,6 +57,7 @@ public class SetmealServiceImpl implements SetmealService {
      * @return
      */
     @Override
+    @Transactional()
     public PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO) {
 
         // 开始分页查询
