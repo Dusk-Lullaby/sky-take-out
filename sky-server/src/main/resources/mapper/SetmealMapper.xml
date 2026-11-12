@@ -17,4 +17,12 @@
         </where>
         order by create_time desc
     </select>
+
+    <delete id="deleteBatchByIds">
+        delete from setmeal where id in
+            <foreach collection="ids" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+    </delete>
+
 </mapper>
