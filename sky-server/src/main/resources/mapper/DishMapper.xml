@@ -43,4 +43,8 @@
         order by create_time desc
     </select>
 
+    <select id="getBySetmealId" resultType="com.sky.entity.Dish">
+        SELECT * FROM dish WHERE id IN (SELECT dish_id FROM setmeal_dish WHERE setmeal_id = #{dishId})
+    </select>
+
 </mapper>
