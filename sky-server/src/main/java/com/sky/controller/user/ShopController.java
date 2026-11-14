@@ -33,4 +33,6 @@ public class ShopController {
         log.info("获取店铺营业状态：{}", Objects.equals(status, StatusConstant.ENABLE) ? "营业中" : "打样中");
         return Result.success(status);
     }
+
+    // 209af7e0d0accf3734d9a514401ccac0
 }
