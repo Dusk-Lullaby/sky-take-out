@@ -68,7 +68,7 @@ public interface DishMapper {
 
     /**
      * 根据套餐id查询菜品
-     * @param id
+     * @param dishId
      * @return
      */
     List<Dish> getBySetmealId(Long dishId);
