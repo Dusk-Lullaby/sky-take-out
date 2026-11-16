@@ -34,6 +34,10 @@ public class ShoppingCartController {
         return Result.success();
     }
 
+    /**
+     * 查看购物车
+     * @return
+     */
     @GetMapping("/list")
     @ApiOperation("查看购物车")
     public Result<List<ShoppingCart>> list() {
@@ -41,4 +45,6 @@ public class ShoppingCartController {
         List<ShoppingCart> list = shoppingService.showShoppingCart();
         return Result.success(list);
     }
+
+
 }
