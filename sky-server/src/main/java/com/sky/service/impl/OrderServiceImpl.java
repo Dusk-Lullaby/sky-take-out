@@ -116,6 +116,7 @@ public class OrderServiceImpl implements OrderService {
      * @param ordersPaymentDTO
      * @return
      */
+    @Transactional
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         // 当前登录用户id
         Long userId = BaseContext.getCurrentId();
@@ -148,6 +149,7 @@ public class OrderServiceImpl implements OrderService {
      *
      * @param outTradeNo
      */
+    @Transactional()
     public void paySuccess(String outTradeNo) {
 
         // 根据订单号查询订单
@@ -172,6 +174,7 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     @Override
+    @Transactional
     public PageResult pageQuery4User(Integer pageNum, Integer pageSize, Integer status) {
 
         // 封装DTO
@@ -219,5 +222,49 @@ public class OrderServiceImpl implements OrderService {
         orderVO.setOrderDetailList(orderDetailList);
 
         return orderVO;
+    }
+
+    @Override
+    @Transactional
+    public void cancelOrder(Long id) throws Exception {
+
+        // 获取订单
+        Orders ordersDB = orderMapper.getById(id);
+
+        // 判断订单是否存 如果订单不存在，抛出异常
+        if (ordersDB == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+        Integer status = ordersDB.getStatus();
+        // 如果订单状态 > 2 抛出异常
+        if (status > 2) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Orders orders = new Orders();
+        orders.setId(id);
+
+        // 如果订单处于待接单状态需要进行退款
+        if (status == Orders.TO_BE_CONFIRMED) {
+/*
+            //调用微信支付退款接口
+            weChatPayUtil.refund(
+                    ordersDB.getNumber(), //商户订单号
+                    ordersDB.getNumber(), //商户退款单号
+                    new BigDecimal(0.01),//退款金额，单位 元
+                    new BigDecimal(0.01));//原订单金额
+*/
+
+            //支付状态修改为 退款
+            orders.setPayStatus(Orders.REFUND);
+        }
+
+        //  更新订单状态、取消原因、取消时间
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason("用户取消");
+        orders.setCancelTime(LocalDateTime.now());
+        orderMapper.update(orders);
     }
 }

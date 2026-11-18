@@ -95,6 +95,7 @@
             <if test="userId != null">and user_id = #{userId}</if>
             <if test="beginTime != null">and begin_time = #{beginTime}</if>
             <if test="endTime != null">and end_time = #{endTime}</if>
+            <if test="status != null">and status = #{status}</if>
         </where>
     </select>
 </mapper>
