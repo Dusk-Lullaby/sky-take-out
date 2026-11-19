@@ -318,6 +318,18 @@ public class OrderServiceImpl implements OrderService {
         PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
         Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
 
+        // 将Orders转化为OrderVO
+        List<OrderVO> orderVOList = getOrderVOList(page);
+
+        return new PageResult(page.getTotal(), orderVOList);
+    }
+
+    /**
+     * 将Orders转化为OrderVO
+     * @param page
+     * @return
+     */
+    private List<OrderVO> getOrderVOList(Page<Orders> page) {
         // 将Orders转换成OrderVO
         List<OrderVO> orderVOList = new ArrayList<>();
         List<Orders> ordersList = page.getResult();
@@ -327,19 +339,29 @@ public class OrderServiceImpl implements OrderService {
                 OrderVO orderVO = new OrderVO();
                 // 将共同字段复制到OrderVO
                 BeanUtils.copyProperties(orders, orderVO);
-                // 设置orderDishes
-                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
-                List<String> orderDishList = orderDetailList.stream().map(x -> {
-                    String orderDish = x.getName() + "*" + x.getNumber();
-                    return orderDish;
-                }).collect(Collectors.toList());
+                // 获取orderDishes
+                String orderDishes = getOrderDishes(orders);
 
-                orderVO.setOrderDishes(String.join("", orderDishList));
+                orderVO.setOrderDishes(orderDishes);
                 orderVOList.add(orderVO);
             }
         }
+        return orderVOList;
+    }
 
-        return new PageResult(page.getTotal(), page);
+    /**
+     * 根据订单id获取OrderDishes
+     * @param orders
+     * @return
+     */
+    private String getOrderDishes(Orders orders) {
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+        List<String> orderDishList = orderDetailList.stream().map(x -> {
+            String orderDish = x.getName() + "*" + x.getNumber();
+            return orderDish;
+        }).collect(Collectors.toList());
+        String orderDishes = String.join("", orderDishList);
+        return orderDishes;
     }
 
     /**
@@ -361,6 +383,30 @@ public class OrderServiceImpl implements OrderService {
         orderStatisticsVO.setConfirmed(confirmed);
         orderStatisticsVO.setDeliveryInProgress(deliveryInProgress);
         return orderStatisticsVO;
+    }
+
+    /**
+     * 查询订单详情
+     * @param id
+     * @return
+     */
+    @Override
+    public OrderVO details(Long id) {
+
+        // 根据订单id获取菜品信息
+        Orders orders = orderMapper.getById(id);
+        String orderDishes = getOrderDishes(orders);
+
+        // 根据订单id获取订单详情
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
+
+        // 封装orderVO
+        OrderVO orderVO = new OrderVO();
+        BeanUtils.copyProperties(orders, orderVO);
+        orderVO.setOrderDishes(orderDishes);
+        orderVO.setOrderDetailList(orderDetailList);
+
+        return orderVO;
     }
 
 }
