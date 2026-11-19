@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -301,6 +302,42 @@ public class OrderServiceImpl implements OrderService {
         }).collect(Collectors.toList());
 
         shoppingCartMapper.insertBatch(shoppingCartList);
+    }
+
+    /**
+     * 条件搜索订单
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+
+        // 开始搜索
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
+
+        // 将Orders转换成OrderVO
+        List<OrderVO> orderVOList = new ArrayList<>();
+        List<Orders> ordersList = page.getResult();
+        if (ordersList != null && ordersList.size() > 0) {
+            // 遍历每一个order订单，生成orderVO
+            for (Orders orders : ordersList) {
+                OrderVO orderVO = new OrderVO();
+                // 将共同字段复制到OrderVO
+                BeanUtils.copyProperties(orders, orderVO);
+                // 设置orderDishes
+                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+                List<String> orderDishList = orderDetailList.stream().map(x -> {
+                    String orderDish = x.getName() + "*" + x.getNumber();
+                    return orderDish;
+                }).collect(Collectors.toList());
+
+                orderVO.setOrderDishes(String.join("", orderDishList));
+                orderVOList.add(orderVO);
+            }
+        }
+
+        return new PageResult(page.getTotal(), page);
     }
 
 }
