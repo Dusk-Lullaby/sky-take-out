@@ -14,8 +14,12 @@ sky:
   redis:
     host: localhost
     port: 6379
-    password: root
+    password: ${REDIS_PASSWORD}
     database: 10
   wechat:
-    appid: wx413a22f331ae65f4
-    secret: 209af7e0d0accf3734d9a514401ccac0
+    appid: ${WECHAT_APPID}
+    secret: ${WECHAT_SECRET}
+  shop:
+    address: 上海市市辖区金山区翻斗大街翻斗花园2号楼1000室
+  baidu:
+    ak: ${BAIDU_AK}
