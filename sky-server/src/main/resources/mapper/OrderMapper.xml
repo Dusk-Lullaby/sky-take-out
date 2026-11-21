@@ -99,4 +99,20 @@
         </where>
         order by order_time desc
     </select>
+
+    <select id="sumByMap" resultType="java.lang.Double" parameterType="map">
+        select sum(amount) from orders
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="beginTime != null">
+                and order_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and order_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
 </mapper>
