@@ -4,6 +4,7 @@ import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
+import com.sky.vo.OrderReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
@@ -115,6 +116,67 @@ public class ReportServiceImpl implements ReportService {
                 .dateList(StringUtils.join(dateList, ","))
                 .totalUserList(StringUtils.join(totalUserList, ","))
                 .newUserList(StringUtils.join(newUserList, ","))
+                .build();
+    }
+
+    /**
+     * 统计给定时间内订单的数据
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public OrderReportVO getOrderStatistics(LocalDate begin, LocalDate end) {
+
+        // 创建dateList存放每天日期
+        List<LocalDate> dateList = new ArrayList<>();
+        // 获取每日日期
+        dateList.add(begin);
+        while (begin.isBefore(end)) {
+            begin = begin.plusDays(1);
+            dateList.add(begin);
+        }
+
+        // 创建每日订单数集合
+        List<Integer> orderCountList = new ArrayList<>();
+        // 创建每日有效订单数集合
+        List<Integer> validOrderCountList = new ArrayList<>();
+        // 订单总数
+        Integer totalOrderCount = 0;
+        // 有效订单数
+        Integer validOrderCount = 0;
+
+        // 获取每日订单数和每日有效订单数
+        for (LocalDate date : dateList) {
+            LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+
+            // 每日订单
+            Map map = new HashMap();
+            map.put("beginTime", beginTime);
+            map.put("endTime", endTime);
+            Integer orderCount = orderMapper.countByMap(map);
+            orderCountList.add(orderCount);
+            totalOrderCount += orderCount;
+
+            // 每日有效订单
+            map.put("status", Orders.COMPLETED);
+            Integer validOrder = orderMapper.countByMap(map);
+            validOrderCountList.add(validOrder);
+            validOrderCount += validOrder;
+        }
+
+        // 计算订单完成率
+        Double orderCompletionRate = totalOrderCount == 0 ? 0.0 : validOrderCount / totalOrderCount;
+
+        // 封装OrderReportVO
+        return OrderReportVO.builder()
+                .dateList(StringUtils.join(dateList, ","))
+                .orderCountList(StringUtils.join(orderCountList, ","))
+                .validOrderCountList(StringUtils.join(validOrderCountList, ","))
+                .orderCompletionRate(orderCompletionRate)
+                .totalOrderCount(totalOrderCount)
+                .validOrderCount(validOrderCount)
                 .build();
     }
 }
