@@ -2,8 +2,10 @@ package com.sky.service.impl;
 
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.TurnoverReportVO;
+import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     /**
      * 获取营业额统计数据
@@ -65,6 +69,52 @@ public class ReportServiceImpl implements ReportService {
         return TurnoverReportVO.builder()
                 .dateList(StringUtils.join(dateList, ","))
                 .turnoverList(StringUtils.join(turnoverList, ","))
+                .build();
+    }
+
+    /**
+     * 获得指定时间内的用户数据
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public UserReportVO getUserStatistics(LocalDate begin, LocalDate end) {
+        // 创建dateList用于存放每天的日期
+        List<LocalDate> dateList = new ArrayList<>();
+        // 获取每天的日期
+        dateList.add(begin);
+        while (begin.isBefore(end)) {
+            begin = begin.plusDays(1);
+            dateList.add(begin);
+        }
+
+        // 创建totalUserList用于存放用户总量
+        List<Integer> totalUserList = new ArrayList<>();
+        // 创建newUserList用于存放新增用户
+        List<Integer> newUserList = new ArrayList<>();
+        for (LocalDate date : dateList) {
+
+            LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+
+            Map map = new HashMap();
+
+            map.put("endTime", endTime);
+            Integer totalUser = userMapper.countByMap(map);
+            // 获取每天的用户总量
+            totalUserList.add(totalUser);
+
+            map.put("beginTime", beginTime);
+            Integer newUser = userMapper.countByMap(map);
+            // 获取每天的新增用户量
+            newUserList.add(newUser);
+        }
+
+        return UserReportVO.builder()
+                .dateList(StringUtils.join(dateList, ","))
+                .totalUserList(StringUtils.join(totalUserList, ","))
+                .newUserList(StringUtils.join(newUserList, ","))
                 .build();
     }
 }
