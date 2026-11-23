@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.aliyuncs.http.HttpResponse;
 import com.sky.result.Result;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 /**
@@ -89,6 +91,17 @@ public class ReportController {
 
         log.info("销量排行 begin:{},end:{}", begin, end);
         return Result.success(reportService.top10(begin, end));
+    }
+
+    /**
+     * 导出运营数据报表
+     * @param httpServletResponse
+     */
+    @GetMapping("/export")
+    @ApiOperation("导出运营数据报表")
+    public void export(HttpServletResponse httpServletResponse) {
+        log.info("到处Excel报表");
+        reportService.exportBusinessData(httpServletResponse);
     }
 
 }

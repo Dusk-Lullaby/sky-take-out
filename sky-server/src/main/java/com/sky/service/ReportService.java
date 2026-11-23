@@ -1,11 +1,13 @@
 package com.sky.service;
 
+import com.aliyuncs.http.HttpResponse;
 import com.sky.result.Result;
 import com.sky.vo.OrderReportVO;
 import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 public interface ReportService {
@@ -41,4 +43,10 @@ public interface ReportService {
      * @return
      */
     SalesTop10ReportVO top10(LocalDate begin, LocalDate end);
+
+    /**
+     * 导出近30天运营数据报表
+     * @param httpServletResponse
+     */
+    void exportBusinessData(HttpServletResponse httpServletResponse);
 }
